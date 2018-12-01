@@ -15,6 +15,7 @@ defmodule CsQueue.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
+      mod: {CsQueue.Application, []},
       extra_applications: logger_application()
     ]
   end
