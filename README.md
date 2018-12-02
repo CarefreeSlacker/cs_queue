@@ -4,8 +4,7 @@
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `cs_queue` to your list of dependencies in `mix.exs`:
+1. Add to dependencies
 
 ```elixir
 def deps do
@@ -15,9 +14,34 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/cs_queue](https://hexdocs.pm/cs_queue).
+2. [Optional] Write to the project configuration path to the directory for queue copies
+
+```elixir
+  config :mnesia, dir: 'mnesia/#{Mix.env}/#{node()}'
+```
+
+By default if places in the root of your project and called 'Mnesia.<node()>'
+
+3. Add mnesia directory to .gitignore.
+
+
+```elixir
+/Mnesia.*/ # Example for default. If you specified different folder on step 2 write your directory
+```
+
+4. Add application to extra starting applications in your mix.exs.
+
+```elixir
+  def application do
+    [
+      ...,
+      extra_applications: [..., :cs_queue, ....],
+      ...
+    ]
+  end
+```
+
+
 
 ## Exercise
 Реализовать на Elixir персистентную очередь сообщений со следующими возможностями:
