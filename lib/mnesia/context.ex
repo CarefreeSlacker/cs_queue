@@ -1,5 +1,5 @@
 defmodule CsQueue.Mnesia.Context do
-  @defmodule """
+  @moduledoc """
   Contains functions for manipulation with mnesia
   """
   @table_definition [attributes: [:index, :term], type: :ordered_set, disc_copies: [Node.self()]]
@@ -77,6 +77,24 @@ defmodule CsQueue.Mnesia.Context do
       end
     end)
     |> convert_transaction_result()
+  end
+
+  def get_all_queue_messages(q_name) do
+    :mnesia.transaction(fn ->
+      %{
+        queue_messages: query_all_messages(queue_name(q_name)),
+        waiting_queue: query_all_messages(waiting_queue_name(q_name))
+      }
+    end)
+    |> convert_transaction_result()
+  end
+
+  defp query_all_messages(queue_name) do
+    :mnesia.all_keys(queue_name)
+    |> Enum.map(fn index ->
+      [{_queue_name, _index, term}] = :mnesia.read(queue_name, index)
+      term
+    end)
   end
 
   defp queue_name(name), do: String.to_atom("#{name}_queue")

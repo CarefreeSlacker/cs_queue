@@ -18,3 +18,8 @@ defmodule CsQueue.Api.ProducerApi do
   @spec enqueue_message(binary, any) :: :ok | {:error, :no_queue} | {:error, :please_repeat_later}
   defdelegate enqueue_message(queue_name, term), to: QSupervisor, as: :enqueue_message
 end
+
+alias CsQueue.Api.{ProducerApi, ConsumerApi}
+table = "Queue"
+ProducerApi.enqueue_message(table, 40)
+ConsumerApi.get_message_from_queue(table)

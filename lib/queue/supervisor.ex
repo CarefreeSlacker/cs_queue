@@ -26,6 +26,11 @@ defmodule CsQueue.Queue.Supervisor do
     QueueManager.safe_evaluate_for_pid(queue_name, fn pid ->
       terminate_and_return_result(pid, return_queue_result)
     end)
+    |> (fn
+          {:ok, result} -> result
+          {:error, reason} -> {:error, reason}
+          :ok -> :ok
+        end).()
   end
 
   def enqueue_message(queue_name, term) do

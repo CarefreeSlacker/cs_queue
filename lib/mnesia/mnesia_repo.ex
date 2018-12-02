@@ -17,9 +17,12 @@ defmodule CsQueue.Mnesia.MnesiaRepo do
   end
 
   defp initialize_mnesia do
+    :mnesia.system_info(:directory)
+    |> File.mkdir()
+
+    :mnesia.create_schema([Node.self()])
+
     :mnesia.start()
-    # TODO implement creation of directory_name
-    # and reseting database function
   end
 
   defp start_table_workers do

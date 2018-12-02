@@ -76,7 +76,7 @@ defmodule CsQueue.Queue.QueueManager do
     end)
   end
 
-  def handle_info({:initialize, %{name: name} = opts}, state) do
+  def handle_info({:initialize, %{name: name}}, state) do
     max_message_index = MnesiaContext.initialize_queue_tables(name)
     {:noreply, Map.merge(state, %{max_message_index: max_message_index, ready: true, name: name})}
   end
@@ -86,11 +86,11 @@ defmodule CsQueue.Queue.QueueManager do
     {:reply, :ok, state}
   end
 
-  def handle_call(:get_queue_messages, _from, state) do
-    {:reply, %{queue_messages: [], waiting_queue: []}, state}
+  def handle_call(:get_queue_messages, _from, %{name: name} = state) do
+    {:reply, MnesiaContext.get_all_queue_messages(name), state}
   end
 
-  def handle_call({:enqueue_message, term}, _from, %{ready: false} = state) do
+  def handle_call({:enqueue_message, _term}, _from, %{ready: false} = state) do
     busy_call_reply(state)
   end
 
@@ -125,15 +125,6 @@ defmodule CsQueue.Queue.QueueManager do
     {:reply, result, state}
   end
 
-  def handle_cast({:confirm_delivery, message_index}, %{ready: false} = state) do
-    {:noreply, state}
-  end
-
-  def handle_cast({:confirm_delivery, message_index}, %{name: queue_name, ready: true} = state) do
-    MnesiaContext.confirm_delivery(queue_name, message_index)
-    {:noreply, state}
-  end
-
   def handle_call({:reject_delivery, _message_index}, _from, %{ready: false} = state) do
     busy_call_reply(state)
   end
@@ -147,7 +138,16 @@ defmodule CsQueue.Queue.QueueManager do
     {:reply, result, Map.merge(state, %{max_message_index: max_message_index + 1})}
   end
 
-  def handle_cast({:reject_delivery, message_index}, %{ready: false} = state) do
+  def handle_cast({:confirm_delivery, _message_index}, %{ready: false} = state) do
+    {:noreply, state}
+  end
+
+  def handle_cast({:confirm_delivery, message_index}, %{name: queue_name, ready: true} = state) do
+    MnesiaContext.confirm_delivery(queue_name, message_index)
+    {:noreply, state}
+  end
+
+  def handle_cast({:reject_delivery, _message_index}, %{ready: false} = state) do
     {:noreply, state}
   end
 
