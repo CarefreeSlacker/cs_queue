@@ -9,6 +9,10 @@ defmodule CsQueue.Queue.Supervisor do
     DynamicSupervisor.start_link(__MODULE__, arg, name: __MODULE__)
   end
 
+  def start_child(queue_name) when is_binary(queue_name) do
+    start_child(%{name: queue_name})
+  end
+
   def start_child(%{} = args) do
     child = {QueueManager, args}
 
@@ -19,12 +23,9 @@ defmodule CsQueue.Queue.Supervisor do
   end
 
   def terminate_child(queue_name, return_queue_result) do
-    with pid when not is_nil(pid) <- QueueManager.check_if_queue_exist(queue_name),
-         result <- terminate_and_return_result(pid, return_queue_result) do
-      result
-    else
-      nil -> {:error, :no_queue}
-    end
+    QueueManager.safe_evaluate_for_pid(queue_name, fn pid ->
+      terminate_and_return_result(pid, return_queue_result)
+    end)
   end
 
   def enqueue_message(queue_name, term) do

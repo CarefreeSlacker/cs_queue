@@ -24,7 +24,7 @@ defmodule CsQueue.Mnesia.MnesiaRepo do
 
   defp start_table_workers do
     :mnesia.system_info(:tables)
-    |> Enum.map(& Atom.to_string(&1))
+    |> Enum.map(&Atom.to_string(&1))
     |> Enum.each(fn table_name ->
       case Regex.run(~r/(\w+)_waiting_queue/, table_name) do
         nil -> :ok
